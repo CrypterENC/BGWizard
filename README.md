@@ -46,17 +46,6 @@ TOOLS/
 └── README.md
 ```
 
-## 🔧 Configuration
-
-### Environment Variables
-- `FLASK_ENV`: Set to `development` for debug mode
-- `FLASK_APP`: Main application file (app.py)
-
-### AI Model Options
-- **u2net**: General-purpose background removal
-- **u2net_human_seg**: Optimized for human subjects
-- **u2netp**: Specialized for portrait photography
-
 ## 🌐 Usage
 
 1. **Upload Images**: Drag and drop or click to select PNG/JPG/WebP files
@@ -81,4 +70,4 @@ This project is open-source. See individual tool directories for specific licens
 
 ## ⚠️ Disclaimer
 
-This tool uses AI/ML models for image processing. Ensure you have proper rights to process and modify uploaded images.s
+This tool uses AI/ML models for image processing. Ensure you have proper rights to process and modify uploaded images
