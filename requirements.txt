@@ -1,0 +1,7 @@
+Flask
+backgroundremover
+Pillow
+onnxruntime
+torch
+torchvision
+ffmpeg-python

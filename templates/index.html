@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>✂️ Advanced Background Remover</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            margin: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .drop-area {
+            border: 3px dashed #007bff;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .drop-area:hover, .drop-area.dragover {
+            border-color: #0056b3;
+            background: #e3f2fd;
+            transform: scale(1.02);
+        }
+
+        .drop-area p {
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        .batch-info {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        .file-list {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-name {
+            flex: 1;
+            font-size: 0.9em;
+        }
+
+        .file-size {
+            color: #666;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+
+        .remove-file {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .output-format {
+            margin-top: 20px;
+        }
+
+        .format-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .format-option {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .format-option:hover, .format-option.selected {
+            border-color: #007bff;
+            background: #e3f2fd;
+        }
+
+        .preview-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .preview-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .preview-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .preview-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .batch-results {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .result-item {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .result-image {
+            max-width: 100%;
+            max-height: 150px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .download-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .download-btn:hover {
+            background: #218838;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .upload-btn:hover {
+            background: #0056b3;
+        }
+
+        .settings {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .setting-group {
+            margin-bottom: 20px;
+        }
+
+        .setting-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .setting-group select, .setting-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        .advanced-toggle {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.3s ease;
+        }
+
+        .advanced-toggle:hover {
+            background: #5a6268;
+        }
+
+        .advanced-settings {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .slider-container {
+            margin-bottom: 15px;
+        }
+
+        .slider-container label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .slider-container input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .slider-value {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+
+        .processing {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .drop-area {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✂️ Advanced Background Remover</h1>
+
+        <div id="dropArea" class="drop-area">
+            <p>Drop images here or click to upload</p>
+            <form id="uploadForm" action="/" method="post" enctype="multipart/form-data">
+                <input type="file" id="fileInput" name="files" class="file-input" accept="image/*" multiple>
+                <button type="button" class="upload-btn" onclick="document.getElementById('fileInput').click()">Choose Files</button>
+                <div id="batchInfo" class="batch-info" style="display: none;"></div>
+            </form>
+            <div id="fileList" class="file-list"></div>
+        </div>
+
+        <div class="output-format">
+            <div class="setting-group">
+                <label>Output Format:</label>
+                <div class="format-options">
+                    <div class="format-option selected" data-format="png">PNG (Transparent)</div>
+                    <div class="format-option" data-format="jpg">JPG (Solid BG)</div>
+                    <div class="format-option" data-format="webp">WebP (Smaller)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings">
+            <div class="setting-group">
+                <label for="modelSelect">AI Model:</label>
+                <select id="modelSelect" name="model">
+                    <option value="u2net">U2Net (General Purpose)</option>
+                    <option value="u2net_human_seg">U2Net Human Segmentation</option>
+                    <option value="u2netp">U2Net Portrait</option>
+                </select>
+            </div>
+
+            <button class="advanced-toggle" onclick="toggleAdvanced()">⚙️ Advanced Settings</button>
+
+            <div id="advancedSettings" class="advanced-settings">
+                <div class="slider-container">
+                    <label for="foregroundThreshold">Foreground Threshold: <span id="fgValue" class="slider-value">240</span></label>
+                    <input type="range" id="foregroundThreshold" name="fg_threshold" min="200" max="280" value="240" step="10">
+                </div>
+
+                <div class="slider-container">
+                    <label for="backgroundThreshold">Background Threshold: <span id="bgValue" class="slider-value">10</span></label>
+                    <input type="range" id="backgroundThreshold" name="bg_threshold" min="1" max="50" value="10" step="5">
+                </div>
+
+                <div class="slider-container">
+                    <label for="erodeSize">Edge Refinement: <span id="erodeValue" class="slider-value">10</span></label>
+                    <input type="range" id="erodeSize" name="erode_size" min="1" max="20" value="10" step="1">
+                </div>
+            </div>
+        </div>
+
+        <div id="processing" class="processing">
+            <div class="spinner"></div>
+            <p>Processing image with AI... Please wait.</p>
+        </div>
+
+        <div id="previewSection" class="preview-section">
+            <h2>Preview</h2>
+            <div class="preview-container">
+                <div class="preview-box">
+                    <div class="preview-title">Original</div>
+                    <img id="originalPreview" class="preview-image" src="" alt="Original image">
+                </div>
+                <div class="preview-box">
+                    <div class="preview-title">Processed</div>
+                    <img id="processedPreview" class="preview-image" src="" alt="Processed image">
+                </div>
+            </div>
+        </div>
+
+        <div id="batchResults" class="batch-results">
+            <h2>Batch Processing Results</h2>
+            <div class="results-grid" id="resultsGrid"></div>
+        </div>
+
+    <script>
+        let dropZone = document.getElementById("dropArea");
+        let fileInput = document.getElementById("fileInput");
+        let uploadForm = document.getElementById("uploadForm");
+        let processing = document.getElementById("processing");
+        let alertDiv = document.getElementById("alert");
+        let previewSection = document.getElementById("previewSection");
+        let batchResults = document.getElementById("batchResults");
+        let batchInfo = document.getElementById("batchInfo");
+        let fileList = document.getElementById("fileList");
+
+        let selectedFiles = [];
+        let selectedFormat = 'png';
+
+        // Update slider values
+        document.getElementById('foregroundThreshold').addEventListener('input', function() {
+            document.getElementById('fgValue').textContent = this.value;
+        });
+
+        document.getElementById('backgroundThreshold').addEventListener('input', function() {
+            document.getElementById('bgValue').textContent = this.value;
+        });
+
+        document.getElementById('erodeSize').addEventListener('input', function() {
+            document.getElementById('erodeValue').textContent = this.value;
+        });
+
+        function toggleAdvanced() {
+            const advanced = document.getElementById('advancedSettings');
+            advanced.style.display = advanced.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Format selection
+        document.querySelectorAll('.format-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.format-option').forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedFormat = this.dataset.format;
+            });
+        });
+
+        // File management functions
+        function updateFileList() {
+            fileList.innerHTML = '';
+            if (selectedFiles.length === 0) {
+                fileList.style.display = 'none';
+                batchInfo.style.display = 'none';
+                return;
+            }
+
+            fileList.style.display = 'block';
+            batchInfo.style.display = 'block';
+            batchInfo.textContent = `${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''} selected`;
+
+            selectedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+
+                const fileName = document.createElement('div');
+                fileName.className = 'file-name';
+                fileName.textContent = file.name;
+
+                const fileSize = document.createElement('div');
+                fileSize.className = 'file-size';
+                fileSize.textContent = formatFileSize(file.size);
+
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-file';
+                removeBtn.textContent = '×';
+                removeBtn.onclick = () => removeFile(index);
+
+                fileItem.appendChild(fileName);
+                fileItem.appendChild(fileSize);
+                fileItem.appendChild(removeBtn);
+                fileList.appendChild(fileItem);
+            });
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            updateFileList();
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Drag and drop functionality
+        dropZone.addEventListener("click", function () {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener("change", function (e) {
+            handleFiles(e.target.files);
+        });
+
+        dropZone.addEventListener("dragover", function (e) {
+            e.preventDefault();
+            this.classList.add("dragover");
+        });
+
+        dropZone.addEventListener("dragleave", function (e) {
+            this.classList.remove("dragover");
+        });
+
+        dropZone.addEventListener("drop", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.remove("dragover");
+            handleFiles(e.dataTransfer.files);
+        });
+
+        function handleFiles(files) {
+            const validFiles = Array.from(files).filter(file => {
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+                if (!allowedTypes.includes(file.type)) {
+                    showAlert(`Invalid file type: ${file.name}. Please use JPG, PNG, or WebP.`, 'error');
+                    return false;
+                }
+                if (file.size > 10 * 1024 * 1024) {
+                    showAlert(`File too large: ${file.name}. Maximum size is 10MB.`, 'error');
+                    return false;
+                }
+                return true;
+            });
+
+            // Add to selected files, avoiding duplicates
+            validFiles.forEach(file => {
+                if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                    selectedFiles.push(file);
+                }
+            });
+
+            updateFileList();
+
+            // Show preview for single file
+            if (selectedFiles.length === 1) {
+                showPreview(selectedFiles[0]);
+            }
+        }
+
+        function showPreview(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('originalPreview').src = e.target.result;
+                previewSection.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function validateAndSubmit() {
+            if (selectedFiles.length === 0) {
+                showAlert('Please select at least one image file.', 'error');
+                return;
+            }
+
+            // Create FormData for batch upload
+            const formData = new FormData();
+
+            selectedFiles.forEach((file, index) => {
+                formData.append('files', file);
+            });
+
+            // Add form parameters
+            formData.append('model', document.getElementById('modelSelect').value);
+            formData.append('fg_threshold', document.getElementById('foregroundThreshold').value);
+            formData.append('bg_threshold', document.getElementById('backgroundThreshold').value);
+            formData.append('erode_size', document.getElementById('erodeSize').value);
+            formData.append('output_format', selectedFormat);
+
+            // Show processing indicator
+            processing.style.display = 'block';
+            alertDiv.style.display = 'none';
+            previewSection.style.display = 'none';
+
+            // Submit form
+            fetch('/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.headers.get('content-type')?.includes('application/zip')) {
+                    return response.blob().then(blob => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'background_removed_images.zip';
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+
+                        showAlert('Batch processing complete! ZIP file downloaded.', 'success');
+                        resetForm();
+                    });
+                } else {
+                    return response.blob().then(blob => {
+                        const url = window.URL.createObjectURL(blob);
+                        document.getElementById('processedPreview').src = url;
+                        previewSection.style.display = 'block';
+
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `bg_removed_${selectedFiles[0].name}`;
+                        a.style.display = 'none';
+                        document.body.appendChild(a);
+
+                        setTimeout(() => {
+                            a.click();
+                            document.body.removeChild(a);
+                            showAlert('Processing complete! Image downloaded.', 'success');
+                            resetForm();
+                        }, 1000);
+                    });
+                }
+            })
+            .catch(error => {
+                showAlert('Processing failed: ' + error.message, 'error');
+            })
+            .finally(() => {
+                processing.style.display = 'none';
+            });
+        }
+
+        function resetForm() {
+            selectedFiles = [];
+            updateFileList();
+            fileInput.value = '';
+            previewSection.style.display = 'none';
+            batchResults.style.display = 'none';
+        }
+
+        function showAlert(message, type) {
+            alertDiv.textContent = message;
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.style.display = 'block';
+
+            if (type === 'success') {
+                setTimeout(() => {
+                    alertDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // Handle page load (for error messages from server)
+        window.addEventListener('load', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const error = urlParams.get('error');
+            if (error) {
+                showAlert(decodeURIComponent(error), 'error');
+            }
+        });
+
+        // Add process button
+        const processBtn = document.createElement('button');
+        processBtn.className = 'upload-btn';
+        processBtn.textContent = 'Process Images';
+        processBtn.style.marginTop = '20px';
+        processBtn.onclick = validateAndSubmit;
+        document.querySelector('.container').appendChild(processBtn);
+    </script>
+</body>
+</html>

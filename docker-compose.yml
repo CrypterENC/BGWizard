@@ -1,0 +1,12 @@
+services:
+  background-remover:
+    build: .
+    container_name: background-remover
+    ports:
+      - "5100:5100"
+    volumes:
+      - .:/apps
+    environment:
+      - FLASK_ENV=development
+      - FLASK_APP=app.py
+    command: python app.py
